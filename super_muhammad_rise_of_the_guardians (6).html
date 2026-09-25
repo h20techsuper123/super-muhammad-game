@@ -1,0 +1,2649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SUPER MUHAMMAD: Rise of the Guardians</title>
+  <!-- Load Tailwind CSS for UI overlays -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Bangers for comic headers, Outfit for game UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #050508;
+      font-family: 'Outfit', sans-serif;
+      color: #fff;
+    }
+
+    .comic-font {
+      font-family: 'Bangers', cursive, system-ui;
+      letter-spacing: 1.5px;
+    }
+
+    /* Comic text outline effects */
+    .comic-text-glow {
+      text-shadow: 
+        3px 3px 0px #000,
+        -2px -2px 0px #000,
+        2px -2px 0px #000,
+        -2px 2px 0px #000,
+        0 0 15px rgba(250, 204, 21, 0.7);
+    }
+
+    .comic-badge {
+      background: linear-gradient(180deg, #1b3a2f 0%, #0d1e17 100%);
+      border: 3.5px solid #285444;
+      box-shadow: 0 0 0 3px #facc15, 0 8px 24px rgba(0,0,0,0.85);
+      position: relative;
+    }
+
+    .comic-badge-inner {
+      color: #facc15;
+      text-shadow: 
+        2.5px 2.5px 0 #000, 
+        -1.5px -1.5px 0 #000, 
+        1.5px -1.5px 0 #000, 
+        -1.5px 1.5px 0 #000;
+    }
+
+    /* Screen shake container */
+    #game-container.shake {
+      animation: screenShake 0.25s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes screenShake {
+      10%, 90% { transform: translate3d(-3px, 0, 0); }
+      20%, 80% { transform: translate3d(4px, 2px, 0); }
+      30%, 50%, 70% { transform: translate3d(-5px, -3px, 0); }
+      40%, 60% { transform: translate3d(5px, 2px, 0); }
+    }
+
+    /* Pulsing boss alert */
+    @keyframes alertPulse {
+      0%, 100% { opacity: 0.95; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.04); }
+    }
+    .alert-banner {
+      animation: alertPulse 0.8s infinite ease-in-out;
+    }
+
+    /* Canvas styling */
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    /* Virtual Joypad styling for mobile */
+    .touch-btn {
+      touch-action: none;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+<body class="relative w-full h-full bg-black select-none overflow-hidden">
+
+  <div id="game-container" class="relative w-full h-full overflow-hidden flex items-center justify-center">
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="hud-overlay" class="absolute inset-0 pointer-events-none flex flex-col justify-between p-3 sm:p-5 select-none transition-opacity duration-300">
+      
+      <!-- Top HUD Header -->
+      <div class="flex items-start justify-between w-full">
+        <!-- Hero Status Card (Avatar, HP, Super Energy) -->
+        <div class="flex items-center gap-3 bg-black/70 p-2 sm:p-3 rounded-2xl border-2 border-yellow-500/50 backdrop-blur-md shadow-2xl">
+          <!-- Muhammad's Avatar Frame -->
+          <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 border-yellow-400 bg-slate-900 shadow-inner flex-shrink-0 flex items-center justify-center">
+            <!-- Stylized Hero Vector Avatar -->
+            <svg viewBox="0 0 100 100" class="w-full h-full object-cover">
+              <!-- Dark background -->
+              <rect width="100" height="100" fill="#0f172a" />
+              <!-- Black Suit Collar & Cape -->
+              <path d="M10 100 C15 70, 35 60, 50 60 C65 60, 85 70, 90 100 Z" fill="#111" />
+              <path d="M35 70 L50 90 L65 70 Z" fill="#222" stroke="#444" stroke-width="1.5" />
+              <!-- Shield 'S' Emblem on Chest -->
+              <polygon points="50,72 58,77 55,87 50,91 45,87 42,77" fill="#0a0a0a" stroke="#475569" stroke-width="1.2" />
+              <!-- Head / Neck -->
+              <path d="M42 62 L42 50 L58 50 L58 62 Z" fill="#c68b59" />
+              <circle cx="50" cy="42" r="18" fill="#d99b66" />
+              <!-- Face details -->
+              <circle cx="45" cy="40" r="2" fill="#1e1e1e" />
+              <circle cx="55" cy="40" r="2" fill="#1e1e1e" />
+              <path d="M46 48 Q50 51 54 48" fill="none" stroke="#683416" stroke-width="1.5" stroke-linecap="round" />
+              <!-- Wavy Black Hair -->
+              <path d="M32 40 C32 25, 40 20, 50 20 C60 20, 68 25, 68 40 C65 30, 60 26, 50 27 C40 26, 35 30, 32 40 Z" fill="#141416" />
+              <path d="M30 38 Q36 28 44 32 Q40 38 35 44 Z" fill="#141416" />
+              <path d="M70 38 Q64 28 56 32 Q60 38 65 44 Z" fill="#141416" />
+              <path d="M44 26 Q50 32 54 26" fill="none" stroke="#000" stroke-width="2" />
+            </svg>
+            <div class="absolute -bottom-1 text-[9px] font-black bg-yellow-400 text-black px-1.5 rounded uppercase">HERO</div>
+          </div>
+
+          <!-- Bars -->
+          <div class="flex flex-col gap-1.5 w-36 sm:w-52">
+            <div class="flex justify-between items-center text-xs font-bold px-0.5">
+              <span class="text-red-400 flex items-center gap-1"><i class="fa-solid fa-heart"></i> HEALTH</span>
+              <span id="hud-hp-text" class="text-white text-[11px]">100/100</span>
+            </div>
+            <!-- Health Bar -->
+            <div class="w-full h-3 bg-red-950/80 rounded-full overflow-hidden p-0.5 border border-red-500/40">
+              <div id="hud-hp-bar" class="h-full bg-gradient-to-r from-red-600 via-rose-500 to-amber-400 rounded-full transition-all duration-150 w-full shadow-[0_0_8px_rgba(244,63,94,0.8)]"></div>
+            </div>
+
+            <!-- Energy / Super Bar -->
+            <div class="flex justify-between items-center text-xs font-bold px-0.5 mt-0.5">
+              <span class="text-cyan-400 flex items-center gap-1"><i class="fa-solid fa-bolt"></i> MEGA ENERGY</span>
+              <span id="hud-energy-text" class="text-cyan-300 text-[10px] animate-pulse">READY (E)</span>
+            </div>
+            <div class="w-full h-2.5 bg-cyan-950/80 rounded-full overflow-hidden p-0.5 border border-cyan-500/40">
+              <div id="hud-energy-bar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-400 rounded-full transition-all duration-100 w-full shadow-[0_0_10px_rgba(6,182,212,0.8)]"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Comic Badge & Level Title -->
+        <div class="hidden sm:flex flex-col items-center">
+          <div class="comic-badge px-4 py-1.5 rounded-xl transform -rotate-1 flex flex-col items-center">
+            <span class="comic-font comic-badge-inner text-xl tracking-wider leading-none">SUPER MUHAMMAD</span>
+            <span id="hud-level-name" class="text-[10px] text-green-300 font-extrabold uppercase tracking-widest mt-0.5">CAPITAL SKY: ISLAMABAD</span>
+          </div>
+        </div>
+
+        <!-- Score & Stats -->
+        <div class="flex flex-col items-end gap-1">
+          <div class="bg-black/75 px-3 py-1.5 rounded-xl border border-yellow-500/40 backdrop-blur-md text-right shadow-xl">
+            <div class="text-[10px] tracking-wider text-yellow-400 uppercase font-bold">SCORE</div>
+            <div id="hud-score" class="comic-font text-2xl sm:text-3xl text-yellow-300 leading-none">00000</div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="hud-multiplier" class="text-xs font-extrabold bg-gradient-to-r from-amber-500 to-red-500 px-2 py-0.5 rounded-md text-black shadow">COMBO x1</span>
+            <button id="btn-pause-toggle" class="pointer-events-auto bg-slate-800/80 hover:bg-slate-700 text-white w-8 h-8 rounded-lg flex items-center justify-center border border-slate-600 active:scale-95 transition">
+              <i class="fa-solid fa-pause text-sm"></i>
+            </button>
+            <button id="btn-sound-toggle" class="pointer-events-auto bg-slate-800/80 hover:bg-slate-700 text-yellow-400 w-8 h-8 rounded-lg flex items-center justify-center border border-slate-600 active:scale-95 transition">
+              <i id="sound-icon" class="fa-solid fa-volume-high text-sm"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boss Incoming Banner -->
+      <div id="boss-alert-box" class="self-center hidden pointer-events-none mb-6">
+        <div class="alert-banner bg-gradient-to-r from-red-700 via-rose-600 to-red-700 text-white border-2 border-yellow-400 px-8 py-3 rounded-2xl shadow-[0_0_35px_rgba(239,68,68,0.8)] flex items-center gap-4">
+          <i class="fa-solid fa-triangle-exclamation text-yellow-300 text-2xl animate-bounce"></i>
+          <div>
+            <div class="comic-font text-2xl sm:text-3xl text-yellow-300 tracking-wider">VILLAIN INCOMING!</div>
+            <div id="boss-alert-subtitle" class="text-xs uppercase font-extrabold tracking-widest text-white/90">HEAVY ARMORED ASSAULT DRONE APPROACHING</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boss HP Bar (Visible during boss battles) -->
+      <div id="boss-hud-bar" class="w-full max-w-xl self-center hidden pointer-events-none bg-black/80 p-2.5 rounded-2xl border-2 border-red-500/80 backdrop-blur-md shadow-2xl">
+        <div class="flex justify-between items-center text-xs font-extrabold text-red-300 mb-1 px-1">
+          <span id="boss-name-label" class="comic-font tracking-wide text-base text-yellow-300">BOSS: REPTILIAN TITAN</span>
+          <span id="boss-hp-label">100%</span>
+        </div>
+        <div class="w-full h-4 bg-gray-900 rounded-full overflow-hidden p-0.5 border border-red-600/50">
+          <div id="boss-hp-fill" class="h-full bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 rounded-full transition-all duration-100 w-full shadow-[0_0_12px_rgba(239,68,68,0.9)]"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Mobile On-Screen Controls -->
+      <div id="mobile-controls" class="w-full flex justify-between items-end pb-2 pointer-events-none sm:hidden">
+        <!-- Virtual Joystick Area -->
+        <div id="touch-joystick-zone" class="pointer-events-auto w-32 h-32 rounded-full border-2 border-white/20 bg-white/5 backdrop-blur-sm relative flex items-center justify-center">
+          <div id="touch-joystick-knob" class="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 border-2 border-yellow-200 shadow-[0_0_15px_rgba(250,204,21,0.5)] transform translate-x-0 translate-y-0 pointer-events-none"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3 pointer-events-auto">
+          <!-- Super Blast Button -->
+          <button id="btn-touch-super" class="touch-btn w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-600 to-blue-700 active:from-cyan-400 border-2 border-cyan-300 text-white flex flex-col items-center justify-center shadow-lg active:scale-90 transition">
+            <i class="fa-solid fa-bolt text-lg text-cyan-200"></i>
+            <span class="text-[9px] font-black tracking-tighter uppercase mt-0.5">MEGA</span>
+          </button>
+          <!-- Fire Twin Lasers Button -->
+          <button id="btn-touch-fire" class="touch-btn w-20 h-20 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 active:from-red-500 border-2 border-yellow-400 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition">
+            <i class="fa-solid fa-fire text-2xl text-yellow-300"></i>
+            <span class="comic-font text-xs uppercase tracking-wider mt-0.5">FIRE</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="screen-start" class="absolute inset-0 bg-slate-950/90 backdrop-blur-lg flex flex-col items-center justify-center p-4 z-30 transition-all duration-300">
+      <div class="max-w-md w-full bg-slate-900/90 border-2 border-yellow-500/60 rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden">
+        
+        <!-- Glow highlight -->
+        <div class="absolute -top-24 -left-24 w-48 h-48 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-red-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Title Badge -->
+        <div class="comic-badge inline-block px-6 py-3 rounded-2xl transform -rotate-1 mb-4 shadow-xl">
+          <h1 class="comic-font comic-badge-inner text-4xl sm:text-5xl tracking-wide leading-none">SUPER MUHAMMAD</h1>
+        </div>
+        <h2 class="text-sm sm:text-base font-extrabold uppercase tracking-widest text-cyan-400 mb-5">RISE OF THE GUARDIANS</h2>
+
+        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6 font-medium">
+          Soar across skies, prehistoric jungles, molten caverns, and cosmic starfleets! Defend the realm using dual laser heat vision and catastrophic Mega Blasts!
+        </p>
+
+        <!-- Controls Guide -->
+        <div class="bg-black/50 border border-slate-700/80 rounded-2xl p-3 mb-6 text-left text-xs space-y-1.5 text-slate-300">
+          <div class="flex justify-between items-center"><span class="font-bold text-yellow-400"><i class="fa-solid fa-arrows-up-down-left-right mr-1"></i> Fly:</span> <span>WASD / Arrow Keys / Drag Touch</span></div>
+          <div class="flex justify-between items-center"><span class="font-bold text-red-400"><i class="fa-solid fa-crosshairs mr-1"></i> Twin Lasers:</span> <span>Spacebar / Auto-fire / Touch Button</span></div>
+          <div class="flex justify-between items-center"><span class="font-bold text-cyan-400"><i class="fa-solid fa-bolt mr-1"></i> Mega Guardian Blast:</span> <span>'E' or 'Z' key when meter full</span></div>
+        </div>
+
+        <!-- Start Button -->
+        <div class="flex flex-col gap-3">
+          <button id="btn-start-game" class="w-full py-3.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:brightness-110 active:scale-95 text-slate-950 font-black text-lg uppercase tracking-wider rounded-2xl shadow-[0_0_20px_rgba(250,204,21,0.5)] transition duration-150">
+            <i class="fa-solid fa-play mr-2"></i> START MISSION
+          </button>
+          
+          <button id="btn-open-levels" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-yellow-400 text-xs font-extrabold uppercase tracking-wider rounded-xl border border-slate-600 transition">
+            <i class="fa-solid fa-map mr-1.5"></i> Select Level (1 - 4)
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="screen-levels" class="absolute inset-0 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 z-40 hidden">
+      <div class="max-w-xl w-full bg-slate-900 border-2 border-yellow-500/70 rounded-3xl p-6 text-center shadow-2xl">
+        <h2 class="comic-font text-3xl sm:text-4xl text-yellow-400 mb-2">CHOOSE BATTLE SECTOR</h2>
+        <p class="text-xs text-slate-400 mb-6 font-medium">Select an unlocked sector to deploy Super Muhammad</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <!-- Level 1 -->
+          <button data-level="1" class="btn-select-level bg-slate-800/90 hover:bg-emerald-950/60 border-2 border-emerald-500/50 hover:border-emerald-400 p-3.5 rounded-2xl text-left transition flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-black">1</div>
+            <div>
+              <div class="text-sm font-bold text-white">Capital Sky (Islamabad)</div>
+              <div class="text-[11px] text-emerald-400">Skyline, Faisal Mosque & Drones</div>
+            </div>
+          </button>
+
+          <!-- Level 2 -->
+          <button data-level="2" class="btn-select-level bg-slate-800/90 hover:bg-green-950/60 border-2 border-green-500/50 hover:border-green-400 p-3.5 rounded-2xl text-left transition flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-green-500/20 text-green-400 flex items-center justify-center text-xl font-black">2</div>
+            <div>
+              <div class="text-sm font-bold text-white">Ancient Jungle Ruins</div>
+              <div class="text-[11px] text-green-400">Mayan Pyramids & Reptilian Titan</div>
+            </div>
+          </button>
+
+          <!-- Level 3 -->
+          <button data-level="3" class="btn-select-level bg-slate-800/90 hover:bg-orange-950/60 border-2 border-orange-500/50 hover:border-orange-400 p-3.5 rounded-2xl text-left transition flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center text-xl font-black">3</div>
+            <div>
+              <div class="text-sm font-bold text-white">Magma Volcano Caverns</div>
+              <div class="text-[11px] text-orange-400">Lava falls & Molten Golems</div>
+            </div>
+          </button>
+
+          <!-- Level 4 -->
+          <button data-level="4" class="btn-select-level bg-slate-800/90 hover:bg-indigo-950/60 border-2 border-indigo-500/50 hover:border-indigo-400 p-3.5 rounded-2xl text-left transition flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-cyan-400 flex items-center justify-center text-xl font-black">4</div>
+            <div>
+              <div class="text-sm font-bold text-white">Cosmic Space Fleet</div>
+              <div class="text-[11px] text-cyan-400">Deep Nebula & Cyber Mech Boss</div>
+            </div>
+          </button>
+        </div>
+
+        <button id="btn-back-from-levels" class="py-2.5 px-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider">
+          <i class="fa-solid fa-arrow-left mr-1"></i> Back to Main Menu
+        </button>
+      </div>
+    </div>
+
+    <div id="screen-gameover" class="absolute inset-0 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 z-40 hidden">
+      <div class="max-w-md w-full bg-slate-900 border-2 border-red-500/60 rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative">
+        <div id="gameover-icon-box" class="w-20 h-20 mx-auto rounded-2xl bg-red-950/80 border-2 border-red-500 text-red-400 flex items-center justify-center text-4xl mb-4 shadow-[0_0_20px_rgba(239,68,68,0.5)]">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        
+        <h2 id="gameover-title" class="comic-font text-4xl text-red-400 mb-1">HERO OVERWHELMED!</h2>
+        <p id="gameover-desc" class="text-xs text-slate-300 mb-5">Super Muhammad was forced to fall back. Regroup and protect the city!</p>
+
+        <div class="bg-black/60 border border-slate-800 rounded-2xl p-4 mb-6 grid grid-cols-2 gap-3 text-center">
+          <div>
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Final Score</div>
+            <div id="gameover-score" class="comic-font text-2xl text-yellow-300">12,450</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Defeated Enemies</div>
+            <div id="gameover-kills" class="comic-font text-2xl text-cyan-300">48</div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <button id="btn-restart-game" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 active:scale-95 text-slate-950 font-black text-base uppercase tracking-wider rounded-2xl shadow-xl transition">
+            <i class="fa-solid fa-rotate-right mr-1.5"></i> TRY AGAIN
+          </button>
+          <button id="btn-next-level" class="hidden w-full py-3.5 bg-gradient-to-r from-emerald-500 to-green-400 hover:brightness-110 active:scale-95 text-slate-950 font-black text-base uppercase tracking-wider rounded-2xl shadow-xl transition">
+            <i class="fa-solid fa-forward-step mr-1.5"></i> NEXT LEVEL
+          </button>
+          <button id="btn-gameover-menu" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider">
+            Main Menu
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-pause" class="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-4 z-40 hidden">
+      <div class="max-w-sm w-full bg-slate-900 border-2 border-yellow-500/70 rounded-3xl p-6 text-center shadow-2xl">
+        <h2 class="comic-font text-3xl text-yellow-400 mb-4">GAME PAUSED</h2>
+        <div class="flex flex-col gap-3">
+          <button id="btn-resume-game" class="w-full py-3 bg-gradient-to-r from-yellow-500 to-amber-400 text-slate-950 font-black text-base uppercase tracking-wider rounded-xl active:scale-95 transition">
+            <i class="fa-solid fa-play mr-1.5"></i> Resume Game
+          </button>
+          <button id="btn-pause-menu" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider">
+            Quit to Menu
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* Audio Synthesizer: 100% self-contained synthesized retro superhero arcade SFX */
+    const SoundFx = (() => {
+      let audioCtx = null;
+      let soundEnabled = true;
+
+      function initContext() {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            audioCtx = new AudioContext();
+          }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+      }
+
+      function laser() {
+        if (!soundEnabled) return;
+        initContext();
+        if (!audioCtx) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.12);
+          
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.13);
+        } catch (e) {}
+      }
+
+      function megaBlast() {
+        if (!soundEnabled) return;
+        initContext();
+        if (!audioCtx) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+          osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.45);
+
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.46);
+        } catch (e) {}
+      }
+
+      function explosion() {
+        if (!soundEnabled) return;
+        initContext();
+        if (!audioCtx) return;
+        try {
+          // White noise buffer
+          const bufferSize = audioCtx.sampleRate * 0.25;
+          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = buffer;
+
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+          filter.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.25);
+
+          const gain = audioCtx.createGain();
+          gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(audioCtx.destination);
+          noise.start();
+        } catch (e) {}
+      }
+
+      function powerup() {
+        if (!soundEnabled) return;
+        initContext();
+        if (!audioCtx) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          const now = audioCtx.currentTime;
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.setValueAtTime(440, now + 0.08);
+          osc.frequency.setValueAtTime(660, now + 0.16);
+          osc.frequency.setValueAtTime(880, now + 0.24);
+
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.32);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(now + 0.33);
+        } catch (e) {}
+      }
+
+      function catchSwoosh() {
+        if (!soundEnabled) return;
+        initContext();
+        if (!audioCtx) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const now = audioCtx.currentTime;
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(260, now);
+          osc.frequency.exponentialRampToValueAtTime(820, now + 0.18);
+
+          gain.gain.setValueAtTime(0.28, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.22);
+        } catch (e) {}
+      }
+
+      function healAscension() {
+        if (!soundEnabled) return;
+        initContext();
+        if (!audioCtx) return;
+        try {
+          const now = audioCtx.currentTime;
+          // Four-note uplifting celestial chord (C5 - E5 - G5 - C6)
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+            gain.gain.setValueAtTime(0.22, now + idx * 0.07);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.38);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + idx * 0.07);
+            osc.stop(now + idx * 0.07 + 0.4);
+          });
+        } catch (e) {}
+      }
+
+      function hit() {
+        if (!soundEnabled) return;
+        initContext();
+        if (!audioCtx) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
+
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.11);
+        } catch (e) {}
+      }
+
+      function bossRoar() {
+        if (!soundEnabled) return;
+        initContext();
+        if (!audioCtx) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(90, audioCtx.currentTime);
+          osc.frequency.linearRampToValueAtTime(40, audioCtx.currentTime + 0.5);
+
+          gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.62);
+        } catch (e) {}
+      }
+
+      function toggleSound() {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) initContext();
+        return soundEnabled;
+      }
+
+      return {
+        init: initContext,
+        laser,
+        megaBlast,
+        explosion,
+        powerup,
+        catchSwoosh,
+        healAscension,
+        hit,
+        bossRoar,
+        toggleSound,
+        isEnabled: () => soundEnabled
+      };
+    })();
+  </script>
+
+  <script>
+    // Game Canvas and Viewport Management
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('game-container');
+
+    let VIEW_WIDTH = 1200;
+    let VIEW_HEIGHT = 700;
+    let scaleRatio = 1;
+
+    function resizeCanvas() {
+      const rect = container.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      VIEW_WIDTH = rect.width;
+      VIEW_HEIGHT = rect.height;
+      scaleRatio = Math.min(VIEW_WIDTH / 1000, VIEW_HEIGHT / 650);
+      if (scaleRatio < 0.6) scaleRatio = 0.6;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const GAME_STATE = {
+      MENU: 'menu',
+      PLAYING: 'playing',
+      PAUSED: 'paused',
+      GAMEOVER: 'gameover',
+      LEVEL_CLEAR: 'level_clear'
+    };
+
+    let currentState = GAME_STATE.MENU;
+    let currentLevelIndex = 1;
+    let score = 0;
+    let defeatedCount = 0;
+    let comboMultiplier = 1;
+    let comboTimer = 0;
+    let screenShakeTimer = 0;
+
+    // Keys State
+    const keys = {
+      ArrowUp: false,
+      ArrowDown: false,
+      ArrowLeft: false,
+      ArrowRight: false,
+      w: false,
+      a: false,
+      s: false,
+      d: false,
+      ' ': false,
+      e: false,
+      z: false
+    };
+
+    // Virtual Joystick coordinates
+    let touchJoystick = { active: false, startX: 0, startY: 0, currX: 0, currY: 0, dx: 0, dy: 0 };
+    let touchShooting = false;
+
+    const LEVEL_DATA = {
+      1: {
+        name: "CAPITAL SKY (ISLAMABAD)",
+        subtitle: "Sunset Margalla Skyline & Faisal Mosque",
+        bgType: "capital",
+        bossName: "ASSAULT DRONE COLOSSUS",
+        bossType: "heavy_drone",
+        bossHP: 850,
+        enemyCountToBoss: 18,
+        ambientColor: "#fbbf24"
+      },
+      2: {
+        name: "ANCIENT JUNGLE RUINS",
+        subtitle: "Mayan Pyramids & Prehistoric Terrors",
+        bgType: "jungle",
+        bossName: "FIRE-BREATHING REPTILIAN TITAN",
+        bossType: "reptilian",
+        bossHP: 1300,
+        enemyCountToBoss: 24,
+        ambientColor: "#4ade80"
+      },
+      3: {
+        name: "MAGMA VOLCANO CAVERNS",
+        subtitle: "Molten Lava Waterfalls & Fire Elementals",
+        bgType: "volcano",
+        bossName: "MAGMA GOLEM BEHEMOTH",
+        bossType: "magma_golem",
+        bossHP: 1700,
+        enemyCountToBoss: 28,
+        ambientColor: "#f97316"
+      },
+      4: {
+        name: "COSMIC STARFLEET STATION",
+        subtitle: "Deep Space Nebula & Cybernetic Fortress",
+        bgType: "space",
+        bossName: "CYBER MECH SUPREME TITAN",
+        bossType: "cyber_mech",
+        bossHP: 2400,
+        enemyCountToBoss: 32,
+        ambientColor: "#38bdf8"
+      }
+    };
+
+    const Hero = {
+      x: 120,
+      y: 300,
+      width: 80,
+      height: 48,
+      speed: 7,
+      hp: 100,
+      maxHp: 100,
+      energy: 100,
+      maxEnergy: 100,
+      tilt: 0,
+      shootCooldown: 0,
+      capeWave: 0,
+      invulnerableTimer: 0,
+      shieldTimer: 0,
+      healAuraTimer: 0,
+      megaActive: false,
+      megaTimer: 0,
+      catchStreak: 0,
+      catchStreakTimer: 0,
+      trail: [],
+
+      reset() {
+        this.x = 100;
+        this.y = VIEW_HEIGHT / 2 - 25;
+        this.hp = this.maxHp;
+        this.energy = 100;
+        this.tilt = 0;
+        this.shootCooldown = 0;
+        this.invulnerableTimer = 0;
+        this.shieldTimer = 0;
+        this.healAuraTimer = 0;
+        this.megaActive = false;
+        this.catchStreak = 0;
+        this.catchStreakTimer = 0;
+        this.trail = [];
+      },
+
+      getCatchRadius() {
+        // Expands when injured to make catching life-saving health easier
+        return this.hp < 40 ? 320 : 210;
+      },
+
+      update() {
+        // Movement processing
+        let moveX = 0;
+        let moveY = 0;
+
+        if (keys.ArrowUp || keys.w) moveY -= 1;
+        if (keys.ArrowDown || keys.s) moveY += 1;
+        if (keys.ArrowLeft || keys.a) moveX -= 1;
+        if (keys.ArrowRight || keys.d) moveX += 1;
+
+        // Joystick addition
+        if (touchJoystick.active) {
+          moveX += touchJoystick.dx;
+          moveY += touchJoystick.dy;
+        }
+
+        // Normalize
+        const mag = Math.hypot(moveX, moveY);
+        if (mag > 1) {
+          moveX /= mag;
+          moveY /= mag;
+        }
+
+        this.x += moveX * this.speed;
+        this.y += moveY * this.speed;
+
+        // Boundary Clamping
+        this.x = Math.max(20, Math.min(VIEW_WIDTH - this.width - 20, this.x));
+        this.y = Math.max(20, Math.min(VIEW_HEIGHT - this.height - 30, this.y));
+
+        // Tilt effect based on vertical velocity
+        const targetTilt = moveY * 0.28;
+        this.tilt += (targetTilt - this.tilt) * 0.15;
+
+        // Cape animation oscillation
+        this.capeWave += 0.25;
+
+        // Catch Streak decay
+        if (this.catchStreakTimer > 0) {
+          this.catchStreakTimer--;
+          if (this.catchStreakTimer <= 0) {
+            this.catchStreak = 0;
+          }
+        }
+
+        // Shooting cooldown
+        if (this.shootCooldown > 0) this.shootCooldown--;
+
+        // Auto-shoot if space or touch held
+        if ((keys[' '] || touchShooting) && this.shootCooldown <= 0) {
+          this.shootLasers();
+          this.shootCooldown = 9; // fast arcade fire rate
+        }
+
+        // Mega blast activation trigger
+        if ((keys.e || keys.z) && this.energy >= 100 && !this.megaActive) {
+          this.activateMegaBlast();
+        }
+
+        // Handle Mega Blast duration
+        if (this.megaActive) {
+          this.megaTimer--;
+          // Constant massive frontal screen wipe laser
+          if (this.megaTimer % 2 === 0) {
+            createMegaBlastBeam(this.x + this.width, this.y + this.height / 2);
+          }
+          if (this.megaTimer <= 0) {
+            this.megaActive = false;
+          }
+        } else {
+          // Slowly recharge energy over time
+          if (this.energy < this.maxEnergy) {
+            this.energy = Math.min(this.maxEnergy, this.energy + 0.15);
+          }
+        }
+
+        // Damage invulnerability timer
+        if (this.invulnerableTimer > 0) this.invulnerableTimer--;
+        if (this.shieldTimer > 0) this.shieldTimer--;
+        if (this.healAuraTimer > 0) {
+          this.healAuraTimer--;
+          // Radiant green sparkle aura
+          if (Math.random() < 0.7) {
+            particles.push(new Particle(
+              this.x + Math.random() * this.width,
+              this.y + Math.random() * this.height,
+              (Math.random() - 0.5) * 3,
+              -Math.random() * 3 - 1,
+              Math.random() * 3 + 2,
+              Math.random() > 0.4 ? '#4ade80' : '#facc15',
+              24
+            ));
+          }
+        }
+
+        // Append particle flight jet trail
+        if (Math.random() < 0.6) {
+          particles.push(new Particle(
+            this.x - 5,
+            this.y + this.height / 2 + (Math.random() * 8 - 4),
+            -(Math.random() * 2 + 1),
+            (Math.random() - 0.5) * 1.5,
+            Math.random() * 3 + 2,
+            Math.random() > 0.5 ? '#38bdf8' : '#e0f2fe',
+            20
+          ));
+        }
+      },
+
+      shootLasers() {
+        SoundFx.laser();
+        // Twin Laser Blasts from eyes / outstretched hands
+        projectiles.push(new LaserShot(this.x + this.width, this.y + 12, 14, 0, '#ef4444', true));
+        projectiles.push(new LaserShot(this.x + this.width, this.y + 34, 14, 0, '#ef4444', true));
+
+        // Muzzle flash particle
+        particles.push(new Particle(this.x + this.width, this.y + 23, 1, 0, 8, '#fef08a', 6));
+      },
+
+      activateMegaBlast() {
+        SoundFx.megaBlast();
+        this.energy = 0;
+        this.megaActive = true;
+        this.megaTimer = 90; // ~1.5 seconds of sustained destruction
+        triggerScreenShake(20);
+        floatingTexts.push(new FloatingText("GUARDIAN MEGA BLAST!!", this.x + 30, this.y - 20, '#38bdf8', 28));
+      },
+
+      takeDamage(amount) {
+        if (this.invulnerableTimer > 0 || this.shieldTimer > 0) {
+          // If shielded, create protective deflection sparks
+          if (this.shieldTimer > 0) {
+            for (let i = 0; i < 4; i++) {
+              particles.push(new Particle(
+                this.x + this.width,
+                this.y + this.height / 2,
+                Math.random() * 4 + 2,
+                (Math.random() - 0.5) * 4,
+                3,
+                '#34d399',
+                15
+              ));
+            }
+          }
+          return;
+        }
+        this.hp -= amount;
+        this.invulnerableTimer = 45; // blink frames
+        triggerScreenShake(8);
+        SoundFx.hit();
+
+        // Blood / energy spark hit effect
+        for (let i = 0; i < 8; i++) {
+          particles.push(new Particle(
+            this.x + this.width / 2,
+            this.y + this.height / 2,
+            (Math.random() - 0.5) * 6,
+            (Math.random() - 0.5) * 6,
+            3,
+            '#ef4444',
+            20
+          ));
+        }
+
+        if (this.hp <= 0) {
+          this.hp = 0;
+          gameOver(false);
+        }
+      },
+
+      draw(ctx) {
+        // Blink if recently hit
+        if (this.invulnerableTimer > 0 && Math.floor(Date.now() / 60) % 2 === 0) {
+          return;
+        }
+
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+        ctx.rotate(this.tilt);
+
+        const w = this.width;
+        const h = this.height;
+
+        // Radiant Golden-Emerald Shield Bubble if heal active
+        if (this.shieldTimer > 0) {
+          ctx.save();
+          const shieldPulse = Math.sin(Date.now() * 0.01) * 3;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, (w * 0.75) + shieldPulse, (h * 0.9) + shieldPulse, 0, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(74, 222, 128, 0.18)';
+          ctx.fill();
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = '#facc15';
+          ctx.shadowColor = '#4ade80';
+          ctx.shadowBlur = 18;
+          ctx.stroke();
+
+          // Hexagonal protective runes
+          ctx.strokeStyle = 'rgba(250, 204, 21, 0.6)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          for (let s = 0; s < 6; s++) {
+            const ang = (s / 6) * Math.PI * 2 + (Date.now() * 0.002);
+            const rx = Math.cos(ang) * (w * 0.7);
+            const ry = Math.sin(ang) * (h * 0.85);
+            if (s === 0) ctx.moveTo(rx, ry);
+            else ctx.lineTo(rx, ry);
+          }
+          ctx.closePath();
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Draw Flowing Black Cape (Behind Hero Body)
+        ctx.fillStyle = '#0a0a0c';
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const wave = Math.sin(this.capeWave) * 8;
+        const wave2 = Math.cos(this.capeWave) * 6;
+        ctx.moveTo(-w * 0.25, -h * 0.1);
+        ctx.bezierCurveTo(-w * 0.7, -h * 0.35 + wave, -w * 1.1, -h * 0.2 - wave2, -w * 1.2, 0 + wave);
+        ctx.bezierCurveTo(-w * 1.0, h * 0.4 + wave2, -w * 0.6, h * 0.3 - wave, -w * 0.25, h * 0.25);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Legs in flight stretch
+        ctx.fillStyle = '#111317';
+        ctx.beginPath();
+        ctx.ellipse(-w * 0.45, 4, 18, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Sleek Black Suit Torso
+        ctx.fillStyle = '#18181b';
+        ctx.strokeStyle = '#27272a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-w * 0.35, -h * 0.35, w * 0.65, h * 0.7, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        // Black Superman Shield Emblem on Chest
+        ctx.save();
+        ctx.fillStyle = '#09090b';
+        ctx.strokeStyle = '#52525b';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.1, -8);
+        ctx.lineTo(w * 0.1, -8);
+        ctx.lineTo(w * 0.16, 0);
+        ctx.lineTo(0, 10);
+        ctx.lineTo(-w * 0.16, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Chest 'S' letter styling
+        ctx.fillStyle = '#71717a';
+        ctx.font = 'bold 9px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('S', 0, 1);
+        ctx.restore();
+
+        // Right Outstretched Arm in Hero Flying Pose
+        ctx.fillStyle = '#18181b';
+        ctx.beginPath();
+        ctx.moveTo(w * 0.15, -6);
+        ctx.lineTo(w * 0.55, -2);
+        ctx.lineTo(w * 0.55, 6);
+        ctx.lineTo(w * 0.15, 8);
+        ctx.closePath();
+        ctx.fill();
+        // Hand Fist
+        ctx.fillStyle = '#c68b59';
+        ctx.beginPath();
+        ctx.arc(w * 0.55, 2, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Head and Face (Super Muhammad)
+        ctx.fillStyle = '#c68b59';
+        ctx.beginPath();
+        ctx.arc(w * 0.15, -h * 0.42, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Charming Wavy Dark Hair
+        ctx.fillStyle = '#09090b';
+        ctx.beginPath();
+        ctx.arc(w * 0.14, -h * 0.48, 12.5, Math.PI * 0.8, Math.PI * 2.2);
+        ctx.bezierCurveTo(w * 0.28, -h * 0.38, w * 0.2, -h * 0.6, w * 0.05, -h * 0.5);
+        ctx.fill();
+
+        // Glowing Hero Laser Eyes (Primary heat emission)
+        ctx.fillStyle = '#ef4444';
+        ctx.shadowColor = '#f87171';
+        ctx.shadowBlur = 10;
+        ctx.fillRect(w * 0.22, -h * 0.44, 3, 2);
+        ctx.shadowBlur = 0;
+
+        ctx.restore();
+      }
+    };
+
+    const projectiles = [];
+
+    class LaserShot {
+      constructor(x, y, vx, vy, color = '#ef4444', isHero = true, radius = 4) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.color = color;
+        this.isHero = isHero;
+        this.radius = radius;
+        this.life = 120;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life--;
+
+        // Glow trail particles
+        if (Math.random() < 0.3) {
+          particles.push(new Particle(this.x, this.y, 0, 0, this.radius * 0.7, this.color, 12));
+        }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 12;
+
+        if (this.isHero) {
+          // Elongated horizontal laser beam
+          ctx.beginPath();
+          ctx.ellipse(this.x, this.y, 14, 3.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Inner bright core
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.ellipse(this.x, this.y, 10, 1.8, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Circular plasma ball for villain drones/bosses
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    function createMegaBlastBeam(x, y) {
+      // Screen-wide mega energy wave
+      for (let i = 0; i < 4; i++) {
+        projectiles.push(new LaserShot(
+          x,
+          y + (Math.random() * 120 - 60),
+          26 + Math.random() * 6,
+          (Math.random() - 0.5) * 3,
+          '#38bdf8',
+          true,
+          10
+        ));
+      }
+    }
+
+    const particles = [];
+    const floatingTexts = [];
+
+    function triggerHealingShockwave(originX, originY) {
+      triggerScreenShake(6);
+      
+      // Wipe enemy bullets within 350px radius
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        const proj = projectiles[i];
+        if (!proj.isHero) {
+          const dist = Math.hypot(proj.x - originX, proj.y - originY);
+          if (dist < 380) {
+            particles.push(new Particle(proj.x, proj.y, 0, 0, 8, '#4ade80', 16));
+            projectiles.splice(i, 1);
+          }
+        }
+      }
+
+      // Expanding green cleansing rings
+      for (let ring = 0; ring < 20; ring++) {
+        const ang = (ring / 20) * Math.PI * 2;
+        const spd = 6.5;
+        particles.push(new Particle(
+          originX,
+          originY,
+          Math.cos(ang) * spd,
+          Math.sin(ang) * spd,
+          5,
+          '#34d399',
+          28
+        ));
+      }
+    }
+
+    class Particle {
+      constructor(x, y, vx, vy, size, color, maxLife) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.size = Math.max(0.5, size);
+        this.life = maxLife;
+        this.maxLife = Math.max(1, maxLife);
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life--;
+      }
+      draw(ctx) {
+        if (this.life <= 0 || this.maxLife <= 0) return;
+        const progress = Math.max(0, Math.min(1, this.life / this.maxLife));
+        const currentRadius = Math.max(0, this.size * progress);
+        if (currentRadius <= 0.05) return;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, progress));
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    class FloatingText {
+      constructor(text, x, y, color = '#facc15', size = 22) {
+        this.text = text;
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.size = size;
+        this.life = 45;
+        this.maxLife = 45;
+      }
+      update() {
+        this.y -= 1.2;
+        this.life--;
+      }
+      draw(ctx) {
+        ctx.save();
+        const alpha = Math.min(1, this.life / 20);
+        ctx.globalAlpha = alpha;
+        ctx.font = `900 ${this.size}px 'Bangers', cursive`;
+        ctx.textAlign = 'center';
+        // Comic Black Outline
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#000000';
+        ctx.strokeText(this.text, this.x, this.y);
+        ctx.fillStyle = this.color;
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+      }
+    }
+
+    function triggerScreenShake(duration = 10) {
+      screenShakeTimer = duration;
+      container.classList.add('shake');
+      setTimeout(() => {
+        container.classList.remove('shake');
+      }, duration * 16);
+    }
+
+    function spawnComicExplosion(x, y, label = "POW!") {
+      SoundFx.explosion();
+      triggerScreenShake(7);
+      floatingTexts.push(new FloatingText(label, x, y - 20, '#facc15', 26));
+
+      // Multi-colored fiery particles
+      const colors = ['#f59e0b', '#ef4444', '#facc15', '#ffffff'];
+      for (let i = 0; i < 24; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const spd = Math.random() * 6 + 2;
+        particles.push(new Particle(
+          x,
+          y,
+          Math.cos(ang) * spd,
+          Math.sin(ang) * spd,
+          Math.random() * 5 + 3,
+          colors[Math.floor(Math.random() * colors.length)],
+          30 + Math.random() * 15
+        ));
+      }
+    }
+
+    const powerups = [];
+
+    class PowerUp {
+      constructor(x, y, type = 'heal', isAirdrop = false) {
+        this.x = x;
+        this.y = y;
+        this.type = type; // 'heal', 'energy', 'points'
+        this.isAirdrop = isAirdrop;
+        this.vx = isAirdrop ? -1.2 : -1.8;
+        this.vy = isAirdrop ? 1.4 : 0;
+        this.floatOffset = Math.random() * 10;
+        this.radius = isAirdrop ? 22 : 17;
+        this.beingCaught = false;
+        this.pulse = 0;
+      }
+
+      update() {
+        this.pulse += 0.08;
+
+        const hx = Hero.x + Hero.width / 2;
+        const hy = Hero.y + Hero.height / 2;
+        const dist = Math.hypot(hx - this.x, hy - this.y);
+        const catchDist = Hero.getCatchRadius();
+
+        // Magnetic Attraction / Catching System:
+        // When within Muhammad's catch zone, it accelerates toward his outstretched hands!
+        if (dist < catchDist) {
+          this.beingCaught = true;
+          const pullAngle = Math.atan2(hy - this.y, hx - this.x);
+          const pullSpeed = Math.min(13, 3 + (1 - dist / catchDist) * 11);
+          this.x += Math.cos(pullAngle) * pullSpeed;
+          this.y += Math.sin(pullAngle) * pullSpeed;
+
+          // Catching tether particles
+          if (Math.random() < 0.45) {
+            particles.push(new Particle(
+              this.x,
+              this.y,
+              (Math.random() - 0.5) * 2,
+              (Math.random() - 0.5) * 2,
+              this.type === 'heal' ? 3.5 : 2.5,
+              this.type === 'heal' ? '#4ade80' : '#facc15',
+              14
+            ));
+          }
+        } else {
+          this.beingCaught = false;
+          this.x += this.vx;
+          this.floatOffset += 0.08;
+          if (this.isAirdrop) {
+            this.y += this.vy + Math.sin(this.floatOffset) * 0.4;
+          } else {
+            this.y += Math.sin(this.floatOffset) * 0.8;
+          }
+        }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        // If it is an airdrop parachute crate, draw its parachute canopy
+        if (this.isAirdrop && !this.beingCaught) {
+          ctx.save();
+          // Parachute lines
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(-12, -8);
+          ctx.lineTo(-24, -32);
+          ctx.moveTo(12, -8);
+          ctx.lineTo(24, -32);
+          ctx.stroke();
+
+          // Canopy
+          ctx.fillStyle = '#10b981';
+          ctx.beginPath();
+          ctx.arc(0, -32, 25, Math.PI, 0);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // White medical stripes on canopy
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(-3, -48, 6, 16);
+          ctx.fillRect(-8, -43, 16, 6);
+          ctx.restore();
+        }
+
+        // Telekinetic tractor beam visualization when actively being caught
+        if (this.beingCaught) {
+          ctx.save();
+          const hx = Hero.x + Hero.width * 0.6;
+          const hy = Hero.y + Hero.height * 0.5;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(hx - this.x, hy - this.y);
+          ctx.strokeStyle = this.type === 'heal' ? 'rgba(74, 222, 128, 0.45)' : 'rgba(250, 204, 21, 0.45)';
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([5, 5]);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Orb pulse & outer glow
+        const glowPulse = Math.sin(this.pulse) * 4;
+        ctx.shadowBlur = 18 + glowPulse;
+        let color = '#10b981';
+        let icon = '+';
+        if (this.type === 'energy') { color = '#38bdf8'; icon = '⚡'; }
+        if (this.type === 'points') { color = '#facc15'; icon = '★'; }
+
+        ctx.shadowColor = color;
+        ctx.fillStyle = color;
+
+        // Draw Catcher ring beacon if it's health
+        if (this.type === 'heal') {
+          ctx.beginPath();
+          ctx.arc(0, 0, this.radius + 6 + glowPulse * 0.5, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(250, 204, 21, 0.7)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        // Core orb body
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Inner symbol
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(icon, 0, 1);
+
+        // "CATCH ME" badge above airdrop
+        if (this.isAirdrop && !this.beingCaught) {
+          ctx.fillStyle = '#facc15';
+          ctx.font = '900 10px "Bangers", cursive';
+          ctx.fillText("CATCH!", 0, -18);
+        }
+
+        ctx.restore();
+      }
+    }
+
+    const enemies = [];
+    let currentBoss = null;
+    let bossIncoming = false;
+    let bossAlertTimer = 0;
+
+    class Enemy {
+      constructor(x, y, type = 'drone') {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.hp = 30;
+        this.maxHp = 30;
+        this.width = 46;
+        this.height = 36;
+        this.vx = -3.5;
+        this.vy = 0;
+        this.fireCooldown = Math.floor(Math.random() * 90) + 40;
+        this.animFrame = 0;
+
+        if (type === 'pterodactyl') {
+          this.hp = 45;
+          this.width = 52;
+          this.height = 34;
+          this.vx = -4.2;
+        } else if (type === 'magma_bat') {
+          this.hp = 50;
+          this.width = 48;
+          this.height = 32;
+          this.vx = -3.8;
+        } else if (type === 'hover_bot') {
+          this.hp = 60;
+          this.width = 50;
+          this.height = 42;
+          this.vx = -3.2;
+        }
+      }
+
+      update() {
+        this.animFrame += 0.15;
+        this.x += this.vx;
+
+        // Custom wave motions per type
+        if (this.type === 'drone') {
+          this.y += Math.sin(this.animFrame) * 1.5;
+        } else if (this.type === 'pterodactyl') {
+          this.y += Math.sin(this.animFrame * 1.8) * 3;
+        } else if (this.type === 'magma_bat') {
+          this.y += Math.cos(this.animFrame * 2) * 2.2;
+        }
+
+        // Enemy shooting logic
+        this.fireCooldown--;
+        if (this.fireCooldown <= 0 && this.x < VIEW_WIDTH - 50) {
+          projectiles.push(new LaserShot(this.x, this.y + this.height / 2, -7.5, 0, '#f43f5e', false, 5));
+          this.fireCooldown = Math.floor(Math.random() * 80) + 70;
+        }
+      }
+
+      takeDamage(amount) {
+        this.hp -= amount;
+        if (this.hp <= 0) {
+          this.destroy();
+          return true;
+        }
+        return false;
+      }
+
+      destroy() {
+        spawnComicExplosion(this.x + this.width / 2, this.y + this.height / 2, "ZAP!");
+        score += 150 * comboMultiplier;
+        defeatedCount++;
+        comboMultiplier = Math.min(8, comboMultiplier + 1);
+        comboTimer = 180;
+
+        // Powerup drop chance
+        if (Math.random() < 0.25) {
+          const types = ['heal', 'energy', 'points'];
+          const picked = types[Math.floor(Math.random() * types.length)];
+          powerups.push(new PowerUp(this.x, this.y, picked));
+        }
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        if (this.type === 'drone') {
+          // Pixel / Sci-Fi Drone with Red Center Eye (as in image)
+          ctx.fillStyle = '#475569';
+          ctx.beginPath();
+          ctx.roundRect(6, 6, 34, 24, 6);
+          ctx.fill();
+          // Drone Thruster Pods
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(0, 10, 6, 16);
+          ctx.fillRect(40, 10, 6, 16);
+          // Red Eye Sensor
+          ctx.fillStyle = '#ef4444';
+          ctx.shadowColor = '#ef4444';
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(18, 18, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          // Dual Blaster Barrels
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(4, 24, 10, 6);
+          ctx.fillRect(32, 24, 10, 6);
+        } else if (this.type === 'pterodactyl') {
+          // Jungle flying reptile
+          ctx.fillStyle = '#15803d';
+          ctx.beginPath();
+          ctx.moveTo(10, 18);
+          ctx.lineTo(28, 4 + Math.sin(this.animFrame * 2) * 8);
+          ctx.lineTo(38, 18);
+          ctx.lineTo(48, 12);
+          ctx.lineTo(38, 26);
+          ctx.lineTo(20, 24);
+          ctx.closePath();
+          ctx.fill();
+          // Eye
+          ctx.fillStyle = '#facc15';
+          ctx.fillRect(14, 15, 3, 3);
+        } else if (this.type === 'magma_bat') {
+          // Molten flying bat
+          ctx.fillStyle = '#c2410c';
+          ctx.beginPath();
+          ctx.arc(24, 18, 14, 0, Math.PI * 2);
+          ctx.fill();
+          // Fiery wings
+          ctx.fillStyle = '#ea580c';
+          ctx.beginPath();
+          ctx.moveTo(10, 18);
+          ctx.lineTo(-4, 6 + Math.sin(this.animFrame * 3) * 10);
+          ctx.lineTo(14, 28);
+          ctx.closePath();
+          ctx.fill();
+          // Core fire
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(24, 18, 5, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Cyber Space Hover-Bot
+          ctx.fillStyle = '#0284c7';
+          ctx.beginPath();
+          ctx.roundRect(8, 4, 34, 30, 8);
+          ctx.fill();
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(16, 12, 18, 8);
+        }
+
+        ctx.restore();
+      }
+    }
+
+    class Boss {
+      constructor(type, maxHp, name) {
+        this.type = type;
+        this.name = name;
+        this.hp = maxHp;
+        this.maxHp = maxHp;
+        this.x = VIEW_WIDTH + 50;
+        this.y = VIEW_HEIGHT / 2 - 80;
+        this.targetX = VIEW_WIDTH - 240;
+        this.width = 160;
+        this.height = 160;
+        this.vy = 2.5;
+        this.animTimer = 0;
+        this.attackTimer = 0;
+        this.roarCooldown = 60;
+      }
+
+      update() {
+        this.animTimer += 0.05;
+
+        // Move into view
+        if (this.x > this.targetX) {
+          this.x -= 2.5;
+        }
+
+        // Bob up and down
+        this.y += this.vy;
+        if (this.y < 60) this.vy = Math.abs(this.vy);
+        if (this.y > VIEW_HEIGHT - this.height - 60) this.vy = -Math.abs(this.vy);
+
+        // Attack patterns
+        this.attackTimer++;
+        if (this.attackTimer % 90 === 0) {
+          this.performSpecialAttack();
+        } else if (this.attackTimer % 35 === 0) {
+          this.performStandardShot();
+        }
+      }
+
+      performStandardShot() {
+        SoundFx.laser();
+        // Fire at hero direction
+        const dy = (Hero.y + Hero.height / 2) - (this.y + this.height / 2);
+        const dx = (Hero.x + Hero.width / 2) - (this.x);
+        const angle = Math.atan2(dy, dx);
+        const speed = 7.5;
+        projectiles.push(new LaserShot(
+          this.x,
+          this.y + this.height / 2,
+          Math.cos(angle) * speed,
+          Math.sin(angle) * speed,
+          '#ef4444',
+          false,
+          7
+        ));
+      }
+
+      performSpecialAttack() {
+        SoundFx.bossRoar();
+        triggerScreenShake(12);
+
+        if (this.type === 'heavy_drone') {
+          // Spread burst of 5 rockets
+          for (let i = -2; i <= 2; i++) {
+            projectiles.push(new LaserShot(
+              this.x,
+              this.y + this.height / 2,
+              -8,
+              i * 2.5,
+              '#fb923c',
+              false,
+              8
+            ));
+          }
+          floatingTexts.push(new FloatingText("MISSILE SALVO!", this.x + 20, this.y, '#f87171', 24));
+        } else if (this.type === 'reptilian') {
+          // Flamethrower breath
+          for (let i = 0; i < 7; i++) {
+            setTimeout(() => {
+              projectiles.push(new LaserShot(
+                this.x - 10,
+                this.y + 40,
+                -10 - Math.random() * 3,
+                (Math.random() - 0.5) * 4,
+                '#ea580c',
+                false,
+                11
+              ));
+            }, i * 60);
+          }
+          floatingTexts.push(new FloatingText("FIRE BREATH!", this.x + 20, this.y, '#ea580c', 24));
+        } else if (this.type === 'magma_golem') {
+          // Lava eruption spheres
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI * 0.7) + (i * 0.15);
+            projectiles.push(new LaserShot(
+              this.x,
+              this.y + 20,
+              Math.cos(angle) * 8,
+              Math.sin(angle) * 8,
+              '#f97316',
+              false,
+              10
+            ));
+          }
+          floatingTexts.push(new FloatingText("MAGMA SURGE!", this.x + 20, this.y, '#fb923c', 24));
+        } else {
+          // Cyber Mech Supreme Multi-Laser Barrage
+          for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI - Math.PI / 2;
+            projectiles.push(new LaserShot(
+              this.x,
+              this.y + this.height / 2,
+              -9 * Math.cos(angle),
+              7 * Math.sin(angle),
+              '#22c55e',
+              false,
+              9
+            ));
+          }
+          floatingTexts.push(new FloatingText("CYBER LASER STORM!", this.x + 20, this.y, '#4ade80', 24));
+        }
+      }
+
+      takeDamage(amount) {
+        this.hp -= amount;
+        // Boss hit spark
+        particles.push(new Particle(
+          this.x + Math.random() * this.width * 0.5,
+          this.y + Math.random() * this.height,
+          (Math.random() - 0.5) * 4,
+          (Math.random() - 0.5) * 4,
+          5,
+          '#facc15',
+          18
+        ));
+
+        if (this.hp <= 0) {
+          this.hp = 0;
+          this.destroy();
+          return true;
+        }
+        return false;
+      }
+
+      destroy() {
+        // Massive multi explosions
+        for (let i = 0; i < 6; i++) {
+          setTimeout(() => {
+            spawnComicExplosion(
+              this.x + Math.random() * this.width,
+              this.y + Math.random() * this.height,
+              i === 0 ? "SUPER VICTORY!" : "BOOM!"
+            );
+          }, i * 140);
+        }
+        score += 5000;
+        setTimeout(() => {
+          levelCompleted();
+        }, 1200);
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        if (this.type === 'heavy_drone') {
+          // Giant Armored Assault Drone
+          ctx.fillStyle = '#334155';
+          ctx.beginPath();
+          ctx.roundRect(10, 30, 130, 90, 16);
+          ctx.fill();
+          ctx.strokeStyle = '#64748b';
+          ctx.lineWidth = 4;
+          ctx.stroke();
+
+          // Dual Turbines
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(0, 10, 30, 40);
+          ctx.fillRect(110, 10, 30, 40);
+
+          // Giant Red Scanning Eye (As featured in drone artwork)
+          ctx.fillStyle = '#ef4444';
+          ctx.shadowColor = '#ef4444';
+          ctx.shadowBlur = 18;
+          ctx.beginPath();
+          ctx.arc(60, 75, 20, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Armor plating stripes
+          ctx.fillStyle = '#facc15';
+          ctx.fillRect(35, 115, 60, 6);
+        } else if (this.type === 'reptilian') {
+          // Green Fire-Breathing Reptilian Titan (Match user image monster)
+          ctx.fillStyle = '#16a34a';
+          // Legs
+          ctx.fillRect(50, 100, 35, 55);
+          ctx.fillRect(90, 105, 30, 50);
+
+          // Muscular Dino Body
+          ctx.beginPath();
+          ctx.ellipse(80, 80, 55, 45, -0.2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Underbelly scales (Yellow-green)
+          ctx.fillStyle = '#a3e635';
+          ctx.beginPath();
+          ctx.ellipse(70, 85, 35, 25, -0.2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Dino Head & Snarl
+          ctx.fillStyle = '#16a34a';
+          ctx.beginPath();
+          ctx.moveTo(50, 40);
+          ctx.lineTo(0, 50);
+          ctx.lineTo(10, 75);
+          ctx.lineTo(60, 75);
+          ctx.closePath();
+          ctx.fill();
+
+          // Sharp Teeth
+          ctx.fillStyle = '#ffffff';
+          for (let t = 0; t < 5; t++) {
+            ctx.beginPath();
+            ctx.moveTo(10 + t * 9, 65);
+            ctx.lineTo(14 + t * 9, 74);
+            ctx.lineTo(18 + t * 9, 65);
+            ctx.fill();
+          }
+
+          // Spikes along back
+          ctx.fillStyle = '#ea580c';
+          for (let s = 0; s < 5; s++) {
+            ctx.beginPath();
+            ctx.moveTo(70 + s * 14, 38 - (s * 2));
+            ctx.lineTo(76 + s * 14, 18 - (s * 2));
+            ctx.lineTo(82 + s * 14, 38 - (s * 2));
+            ctx.fill();
+          }
+
+          // Glowing Red Eye
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.arc(32, 48, 5, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (this.type === 'magma_golem') {
+          // Molten Rock Golem
+          ctx.fillStyle = '#7c2d12';
+          ctx.beginPath();
+          ctx.roundRect(20, 20, 110, 120, 20);
+          ctx.fill();
+          // Glowing Lava Cracks
+          ctx.strokeStyle = '#f97316';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(40, 30);
+          ctx.lineTo(60, 60);
+          ctx.lineTo(90, 80);
+          ctx.lineTo(70, 120);
+          ctx.stroke();
+          // Molten Eyes
+          ctx.fillStyle = '#fef08a';
+          ctx.shadowColor = '#f97316';
+          ctx.shadowBlur = 15;
+          ctx.fillRect(45, 50, 15, 10);
+          ctx.fillRect(85, 50, 15, 10);
+          ctx.shadowBlur = 0;
+        } else {
+          // Level 4 Boss: Colossal Cyber Mech Titan (Silver-Green Armor as in image)
+          // Shoulders & Armor Plating
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillRect(20, 35, 120, 75);
+
+          // Glowing Green Cyber Core Chest Arc
+          ctx.fillStyle = '#22c55e';
+          ctx.shadowColor = '#4ade80';
+          ctx.shadowBlur = 20;
+          ctx.beginPath();
+          ctx.arc(80, 70, 22, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Mech Head & Horns
+          ctx.fillStyle = '#64748b';
+          ctx.beginPath();
+          ctx.moveTo(55, 35);
+          ctx.lineTo(40, 10); // Horn left
+          ctx.lineTo(65, 20);
+          ctx.lineTo(80, 15);
+          ctx.lineTo(95, 20);
+          ctx.lineTo(120, 10); // Horn right
+          ctx.lineTo(105, 35);
+          ctx.closePath();
+          ctx.fill();
+
+          // Green Visor Eye Strip
+          ctx.fillStyle = '#4ade80';
+          ctx.fillRect(62, 32, 36, 6);
+
+          // Heavy Mech Fist / Cannons
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(0, 60, 30, 45);
+          ctx.fillRect(130, 60, 30, 45);
+        }
+
+        ctx.restore();
+      }
+    }
+
+    let bgScroll = 0;
+
+    function drawParallaxBackground(ctx, levelIndex) {
+      bgScroll += 1.2;
+      const lvl = LEVEL_DATA[levelIndex];
+
+      if (lvl.bgType === 'capital') {
+        // LEVEL 1: Capital Sky (Islamabad Skyline, Faisal Mosque & Margalla Hills at sunset)
+        // Sunset Sky Gradient
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, VIEW_HEIGHT);
+        skyGrad.addColorStop(0, '#f97316');   // Deep orange top
+        skyGrad.addColorStop(0.35, '#fb923c'); // Amber
+        skyGrad.addColorStop(0.7, '#fef08a');  // Golden horizon
+        skyGrad.addColorStop(1, '#15803d');    // Lush Margalla foliage base
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+        // Sun
+        ctx.fillStyle = 'rgba(254, 240, 138, 0.4)';
+        ctx.beginPath();
+        ctx.arc(VIEW_WIDTH * 0.75, 140, 90, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Layer 1: Margalla Hills silhouette (Slow scroll)
+        ctx.fillStyle = '#064e3b';
+        ctx.beginPath();
+        ctx.moveTo(0, VIEW_HEIGHT);
+        const hillOffset = (bgScroll * 0.3) % 400;
+        for (let x = -400; x < VIEW_WIDTH + 400; x += 200) {
+          ctx.quadraticCurveTo(x + 100 - hillOffset, VIEW_HEIGHT - 320, x + 200 - hillOffset, VIEW_HEIGHT - 220);
+        }
+        ctx.lineTo(VIEW_WIDTH, VIEW_HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+
+        // Layer 2: Iconic Faisal Mosque Architectural Silhouette (Centered landmark)
+        const mosqueX = ((VIEW_WIDTH * 0.55) - (bgScroll * 0.5)) % (VIEW_WIDTH + 500);
+        const mBaseY = VIEW_HEIGHT - 120;
+
+        ctx.fillStyle = '#f8fafc'; // White marble triangular pavilion
+        ctx.beginPath();
+        ctx.moveTo(mosqueX - 70, mBaseY);
+        ctx.lineTo(mosqueX, mBaseY - 95);
+        ctx.lineTo(mosqueX + 70, mBaseY);
+        ctx.closePath();
+        ctx.fill();
+
+        // 4 Minarets (Turkish inspired thin spires)
+        ctx.fillStyle = '#e2e8f0';
+        [-85, -60, 60, 85].forEach(offset => {
+          ctx.fillRect(mosqueX + offset - 2.5, mBaseY - 145, 5, 145);
+          // Pointed tip
+          ctx.beginPath();
+          ctx.moveTo(mosqueX + offset - 4, mBaseY - 145);
+          ctx.lineTo(mosqueX + offset, mBaseY - 165);
+          ctx.lineTo(mosqueX + offset + 4, mBaseY - 145);
+          ctx.fill();
+        });
+
+        // Layer 3: City skyline and green Margalla trees (Foreground parallax)
+        ctx.fillStyle = '#065f46';
+        ctx.beginPath();
+        ctx.moveTo(0, VIEW_HEIGHT);
+        const treeOffset = (bgScroll * 1.4) % 120;
+        for (let x = -120; x < VIEW_WIDTH + 120; x += 60) {
+          ctx.arc(x + 30 - treeOffset, VIEW_HEIGHT - 40, 45, Math.PI, 0);
+        }
+        ctx.lineTo(VIEW_WIDTH, VIEW_HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+
+      } else if (lvl.bgType === 'jungle') {
+        // LEVEL 2: Ancient Jungle Temple (Mayan pyramids & overgrown ruins)
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, VIEW_HEIGHT);
+        skyGrad.addColorStop(0, '#67e8f9');
+        skyGrad.addColorStop(0.5, '#bae6fd');
+        skyGrad.addColorStop(1, '#166534');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+        // Distant Mayan Step Pyramid
+        const pyrX = ((VIEW_WIDTH * 0.6) - (bgScroll * 0.4)) % (VIEW_WIDTH + 600);
+        const pY = VIEW_HEIGHT - 130;
+        ctx.fillStyle = '#78716c';
+        // Stepped Pyramid body
+        for (let step = 0; step < 6; step++) {
+          ctx.fillRect(pyrX - 100 + (step * 14), pY - (step * 20), 200 - (step * 28), 22);
+        }
+        // Top Shrine
+        ctx.fillStyle = '#57534e';
+        ctx.fillRect(pyrX - 25, pY - 140, 50, 22);
+
+        // Ancient Overgrown Ruins Pillars
+        ctx.fillStyle = '#292524';
+        const pillarX = (150 - (bgScroll * 0.9)) % (VIEW_WIDTH + 400);
+        ctx.fillRect(pillarX, VIEW_HEIGHT - 220, 40, 180);
+        ctx.fillRect(pillarX - 10, VIEW_HEIGHT - 240, 60, 22);
+
+        // Dense Tropical Canopy
+        ctx.fillStyle = '#14532d';
+        ctx.beginPath();
+        ctx.moveTo(0, VIEW_HEIGHT);
+        const jOffset = (bgScroll * 1.5) % 140;
+        for (let x = -140; x < VIEW_WIDTH + 140; x += 70) {
+          ctx.arc(x + 35 - jOffset, VIEW_HEIGHT - 50, 55, Math.PI, 0);
+        }
+        ctx.lineTo(VIEW_WIDTH, VIEW_HEIGHT);
+        ctx.fill();
+
+      } else if (lvl.bgType === 'volcano') {
+        // LEVEL 3: Magma Volcano Caverns (Lava falls and molten rocks)
+        ctx.fillStyle = '#1c0a06';
+        ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+        // Molten Glow gradient
+        const lavaGlow = ctx.createLinearGradient(0, VIEW_HEIGHT, 0, 0);
+        lavaGlow.addColorStop(0, '#f97316');
+        lavaGlow.addColorStop(0.3, '#b91c1c');
+        lavaGlow.addColorStop(1, '#1c0a06');
+        ctx.fillStyle = lavaGlow;
+        ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+        // Cavern Stalactites from ceiling
+        ctx.fillStyle = '#291008';
+        for (let x = 0; x < VIEW_WIDTH + 80; x += 80) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x + 40, 80 + Math.sin(x) * 30);
+          ctx.lineTo(x + 80, 0);
+          ctx.fill();
+        }
+
+        // Animated Lava Waterfall in distance
+        const fallX = (VIEW_WIDTH * 0.45);
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(fallX, 50, 45, VIEW_HEIGHT - 120);
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(fallX + 12, 50, 20, VIEW_HEIGHT - 120);
+
+        // Molten bottom lake
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(0, VIEW_HEIGHT - 70, VIEW_WIDTH, 70);
+        ctx.fillStyle = '#fef08a';
+        for (let i = 0; i < 6; i++) {
+          const bubX = ((i * 200) + (bgScroll * 2)) % VIEW_WIDTH;
+          ctx.beginPath();
+          ctx.arc(bubX, VIEW_HEIGHT - 50, 10 + Math.sin(bgScroll * 0.1 + i) * 6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+      } else {
+        // LEVEL 4: Cosmic Space Platform / Starfleet Station
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+        // Twinkling Space Stars
+        ctx.fillStyle = '#ffffff';
+        for (let i = 0; i < 55; i++) {
+          const sx = ((i * 73) - (bgScroll * 0.2)) % VIEW_WIDTH;
+          const sy = (i * 47) % VIEW_HEIGHT;
+          ctx.fillRect((sx < 0 ? sx + VIEW_WIDTH : sx), sy, (i % 3 === 0 ? 2.5 : 1.5), (i % 3 === 0 ? 2.5 : 1.5));
+        }
+
+        // Giant Glowing Alien Moon
+        ctx.fillStyle = '#e0e7ff';
+        ctx.shadowColor = '#6366f1';
+        ctx.shadowBlur = 30;
+        ctx.beginPath();
+        ctx.arc(VIEW_WIDTH * 0.8, 120, 70, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Starfleet Station Deck Platforms
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0, VIEW_HEIGHT - 60, VIEW_WIDTH, 60);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(0, VIEW_HEIGHT - 64, VIEW_WIDTH, 4);
+
+        // Futuristic Sci-Fi City Columns
+        ctx.fillStyle = '#0f172a';
+        for (let c = 0; c < 5; c++) {
+          const colX = (c * 280 - (bgScroll * 0.7)) % (VIEW_WIDTH + 300);
+          ctx.fillRect(colX, VIEW_HEIGHT - 220, 60, 160);
+          // Window lights
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(colX + 15, VIEW_HEIGHT - 180, 12, 100);
+          ctx.fillStyle = '#0f172a';
+        }
+      }
+    }
+
+    let spawnTimer = 0;
+    let levelEnemiesSpawned = 0;
+    let airdropTimer = 0;
+
+    function handleSpawns() {
+      if (currentBoss || bossIncoming) return;
+
+      const lvl = LEVEL_DATA[currentLevelIndex];
+
+      // Periodic Emergency Aerial Health Drops to Catch (every ~20 seconds or faster if low HP)
+      airdropTimer++;
+      const airdropThreshold = Hero.hp < 50 ? 550 : 900;
+      if (airdropTimer >= airdropThreshold) {
+        airdropTimer = 0;
+        const dropX = Math.random() * (VIEW_WIDTH * 0.45) + (VIEW_WIDTH * 0.45);
+        powerups.push(new PowerUp(dropX, -30, 'heal', true));
+        floatingTexts.push(new FloatingText("AERIAL HEALTH INCOMING! CATCH IT!", VIEW_WIDTH / 2, 70, '#4ade80', 26));
+      }
+
+      // Check if time for Boss Encounter
+      if (levelEnemiesSpawned >= lvl.enemyCountToBoss && enemies.length === 0) {
+        startBossEncounter(lvl);
+        return;
+      }
+
+      spawnTimer++;
+      const spawnInterval = Math.max(35, 75 - (currentLevelIndex * 8));
+
+      if (spawnTimer >= spawnInterval && levelEnemiesSpawned < lvl.enemyCountToBoss) {
+        spawnTimer = 0;
+        levelEnemiesSpawned++;
+
+        let enemyType = 'drone';
+        if (currentLevelIndex === 2) enemyType = Math.random() > 0.4 ? 'pterodactyl' : 'drone';
+        if (currentLevelIndex === 3) enemyType = Math.random() > 0.4 ? 'magma_bat' : 'drone';
+        if (currentLevelIndex === 4) enemyType = Math.random() > 0.4 ? 'hover_bot' : 'drone';
+
+        const spawnY = Math.random() * (VIEW_HEIGHT - 180) + 60;
+        enemies.push(new Enemy(VIEW_WIDTH + 30, spawnY, enemyType));
+      }
+    }
+
+    function startBossEncounter(lvl) {
+      bossIncoming = true;
+      bossAlertTimer = 160;
+
+      // Show Boss Banner
+      const alertBox = document.getElementById('boss-alert-box');
+      document.getElementById('boss-alert-subtitle').innerText = `${lvl.bossName} APPROACHING!`;
+      alertBox.classList.remove('hidden');
+
+      SoundFx.bossRoar();
+
+      setTimeout(() => {
+        alertBox.classList.add('hidden');
+        currentBoss = new Boss(lvl.bossType, lvl.bossHP, lvl.bossName);
+        bossIncoming = false;
+
+        // Enable Boss HUD
+        const bossHud = document.getElementById('boss-hud-bar');
+        document.getElementById('boss-name-label').innerText = `BOSS: ${lvl.bossName}`;
+        bossHud.classList.remove('hidden');
+      }, 2500);
+    }
+
+    function checkCollisions() {
+      // 1. Hero vs PowerUps (Health Catching System)
+      for (let i = powerups.length - 1; i >= 0; i--) {
+        const p = powerups[i];
+        const dist = Math.hypot((Hero.x + Hero.width / 2) - p.x, (Hero.y + Hero.height / 2) - p.y);
+        
+        // Expanded catch trigger envelope
+        if (dist < Hero.width * 0.5 + p.radius + 8) {
+          if (p.type === 'heal') {
+            SoundFx.catchSwoosh();
+            SoundFx.healAscension();
+
+            Hero.hp = Math.min(Hero.maxHp, Hero.hp + 35);
+            Hero.shieldTimer = 180; // ~3 seconds invulnerability shield
+            Hero.healAuraTimer = 90;
+            Hero.catchStreak++;
+            Hero.catchStreakTimer = 360; // ~6 seconds to maintain streak
+
+            // Extra score for catch streak
+            const catchScoreBonus = Hero.catchStreak * 250;
+            score += catchScoreBonus;
+
+            // Uplifting comic catch reactions
+            const streakMsg = Hero.catchStreak > 1 ? `CATCH STREAK x${Hero.catchStreak}! (+${catchScoreBonus} PTS)` : "PERFECT CATCH!";
+            floatingTexts.push(new FloatingText("ALHAMDULILLAH!", Hero.x + 20, Hero.y - 38, '#4ade80', 28));
+            floatingTexts.push(new FloatingText(streakMsg, Hero.x + 20, Hero.y - 14, '#facc15', 22));
+
+            // Disperse nearby threats with healing shockwave
+            triggerHealingShockwave(Hero.x + Hero.width / 2, Hero.y + Hero.height / 2);
+
+            // Emerald & Golden catch flash
+            for (let k = 0; k < 32; k++) {
+              const ang = (k / 32) * Math.PI * 2;
+              const spd = Math.random() * 5 + 3;
+              particles.push(new Particle(
+                Hero.x + Hero.width / 2,
+                Hero.y + Hero.height / 2,
+                Math.cos(ang) * spd,
+                Math.sin(ang) * spd,
+                Math.random() * 4 + 2,
+                Math.random() > 0.5 ? '#4ade80' : '#facc15',
+                35
+              ));
+            }
+          } else if (p.type === 'energy') {
+            SoundFx.powerup();
+            Hero.energy = Hero.maxEnergy;
+            floatingTexts.push(new FloatingText("MEGA FULL!", Hero.x, Hero.y - 15, '#38bdf8', 22));
+          } else {
+            SoundFx.powerup();
+            score += 500;
+            floatingTexts.push(new FloatingText("+500 PTS", Hero.x, Hero.y - 15, '#facc15', 22));
+          }
+          powerups.splice(i, 1);
+        }
+      }
+
+      // 2. Projectiles vs Targets
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        const proj = projectiles[i];
+
+        if (proj.isHero) {
+          // Hero Lasers hit Normal Enemies
+          let hit = false;
+          for (let e = enemies.length - 1; e >= 0; e--) {
+            const enemy = enemies[e];
+            if (
+              proj.x > enemy.x &&
+              proj.x < enemy.x + enemy.width &&
+              proj.y > enemy.y &&
+              proj.y < enemy.y + enemy.height
+            ) {
+              hit = true;
+              const dead = enemy.takeDamage(25);
+              if (dead) {
+                enemies.splice(e, 1);
+              }
+              break;
+            }
+          }
+
+          // Hero Lasers hit Boss
+          if (!hit && currentBoss) {
+            if (
+              proj.x > currentBoss.x &&
+              proj.x < currentBoss.x + currentBoss.width &&
+              proj.y > currentBoss.y &&
+              proj.y < currentBoss.y + currentBoss.height
+            ) {
+              hit = true;
+              currentBoss.takeDamage(18);
+            }
+          }
+
+          if (hit) {
+            projectiles.splice(i, 1);
+            continue;
+          }
+
+        } else {
+          // Enemy Projectiles hit Super Muhammad
+          const dist = Math.hypot((Hero.x + Hero.width / 2) - proj.x, (Hero.y + Hero.height / 2) - proj.y);
+          if (dist < Hero.height * 0.45 + proj.radius) {
+            Hero.takeDamage(12);
+            projectiles.splice(i, 1);
+            continue;
+          }
+        }
+
+        // Out of bounds cleanup
+        if (proj.x < -30 || proj.x > VIEW_WIDTH + 40 || proj.y < -30 || proj.y > VIEW_HEIGHT + 30 || proj.life <= 0) {
+          projectiles.splice(i, 1);
+        }
+      }
+
+      // 3. Hero Body Collision with Enemies
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const enemy = enemies[i];
+        if (
+          Hero.x < enemy.x + enemy.width &&
+          Hero.x + Hero.width > enemy.x &&
+          Hero.y < enemy.y + enemy.height &&
+          Hero.y + Hero.height > enemy.y
+        ) {
+          Hero.takeDamage(18);
+          enemy.takeDamage(50);
+          if (enemy.hp <= 0) enemies.splice(i, 1);
+        }
+      }
+    }
+
+    function updateHUD() {
+      // HP Bar & text
+      const hpPercent = Math.max(0, (Hero.hp / Hero.maxHp) * 100);
+      document.getElementById('hud-hp-bar').style.width = `${hpPercent}%`;
+      document.getElementById('hud-hp-text').innerText = `${Math.ceil(Hero.hp)}/${Hero.maxHp}`;
+
+      // Energy Bar
+      const energyPercent = Math.max(0, (Hero.energy / Hero.maxEnergy) * 100);
+      const energyBar = document.getElementById('hud-energy-bar');
+      energyBar.style.width = `${energyPercent}%`;
+
+      const energyText = document.getElementById('hud-energy-text');
+      if (Hero.energy >= 100) {
+        energyText.innerText = "READY! (PRESS E)";
+        energyText.className = "text-yellow-300 font-black text-[11px] animate-bounce";
+      } else {
+        energyText.innerText = `${Math.floor(Hero.energy)}% CHARGING`;
+        energyText.className = "text-cyan-300 text-[10px]";
+      }
+
+      // Score and Combo
+      document.getElementById('hud-score').innerText = score.toString().padStart(5, '0');
+      document.getElementById('hud-multiplier').innerText = `COMBO x${comboMultiplier}`;
+
+      // Boss Bar
+      if (currentBoss) {
+        const bPercent = Math.max(0, (currentBoss.hp / currentBoss.maxHp) * 100);
+        document.getElementById('boss-hp-fill').style.width = `${bPercent}%`;
+        document.getElementById('boss-hp-label').innerText = `${Math.ceil(bPercent)}%`;
+      }
+    }
+
+    function levelCompleted() {
+      currentState = GAME_STATE.LEVEL_CLEAR;
+
+      if (currentLevelIndex < 4) {
+        // Prepare next level
+        document.getElementById('gameover-icon-box').innerHTML = '<i class="fa-solid fa-trophy text-yellow-400"></i>';
+        document.getElementById('gameover-icon-box').className = 'w-20 h-20 mx-auto rounded-2xl bg-amber-950/80 border-2 border-yellow-400 text-yellow-400 flex items-center justify-center text-4xl mb-4 shadow-[0_0_20px_rgba(250,204,21,0.6)]';
+        document.getElementById('gameover-title').innerText = "SECTOR SECURED!";
+        document.getElementById('gameover-title').className = "comic-font text-4xl text-yellow-400 mb-1";
+        document.getElementById('gameover-desc').innerText = `Super Muhammad liberated ${LEVEL_DATA[currentLevelIndex].name}! Prepare for the next sector.`;
+
+        document.getElementById('btn-restart-game').classList.add('hidden');
+        document.getElementById('btn-next-level').classList.remove('hidden');
+      } else {
+        // Complete Game Won!
+        document.getElementById('gameover-icon-box').innerHTML = '<i class="fa-solid fa-crown text-yellow-400"></i>';
+        document.getElementById('gameover-title').innerText = "UNIVERSE SAVED!";
+        document.getElementById('gameover-desc').innerText = "All sectors secured! Super Muhammad is the ultimate Supreme Guardian!";
+        document.getElementById('btn-next-level').classList.add('hidden');
+        document.getElementById('btn-restart-game').classList.remove('hidden');
+      }
+
+      document.getElementById('gameover-score').innerText = score;
+      document.getElementById('gameover-kills').innerText = defeatedCount;
+      document.getElementById('boss-hud-bar').classList.add('hidden');
+      document.getElementById('screen-gameover').classList.remove('hidden');
+    }
+
+    function gameOver(victory = false) {
+      currentState = GAME_STATE.GAMEOVER;
+      document.getElementById('gameover-icon-box').innerHTML = '<i class="fa-solid fa-shield-halved text-red-400"></i>';
+      document.getElementById('gameover-icon-box').className = 'w-20 h-20 mx-auto rounded-2xl bg-red-950/80 border-2 border-red-500 text-red-400 flex items-center justify-center text-4xl mb-4 shadow-[0_0_20px_rgba(239,68,68,0.5)]';
+      document.getElementById('gameover-title').innerText = "HERO OVERWHELMED!";
+      document.getElementById('gameover-title').className = "comic-font text-4xl text-red-400 mb-1";
+      document.getElementById('gameover-desc').innerText = "Super Muhammad was forced to fall back. Regroup and protect the world!";
+      document.getElementById('gameover-score').innerText = score;
+      document.getElementById('gameover-kills').innerText = defeatedCount;
+
+      document.getElementById('btn-restart-game').classList.remove('hidden');
+      document.getElementById('btn-next-level').classList.add('hidden');
+      document.getElementById('boss-hud-bar').classList.add('hidden');
+      document.getElementById('screen-gameover').classList.remove('hidden');
+    }
+
+    function startLevel(lvlIndex) {
+      currentLevelIndex = lvlIndex;
+      levelEnemiesSpawned = 0;
+      spawnTimer = 0;
+      airdropTimer = 0;
+      currentBoss = null;
+      bossIncoming = false;
+      projectiles.length = 0;
+      enemies.length = 0;
+      powerups.length = 0;
+      particles.length = 0;
+      floatingTexts.length = 0;
+
+      Hero.reset();
+      document.getElementById('hud-level-name').innerText = LEVEL_DATA[currentLevelIndex].name;
+      document.getElementById('boss-hud-bar').classList.add('hidden');
+      document.getElementById('boss-alert-box').classList.add('hidden');
+      document.getElementById('screen-start').classList.add('hidden');
+      document.getElementById('screen-levels').classList.add('hidden');
+      document.getElementById('screen-gameover').classList.add('hidden');
+      document.getElementById('screen-pause').classList.add('hidden');
+
+      currentState = GAME_STATE.PLAYING;
+      floatingTexts.push(new FloatingText("MISSION START!", VIEW_WIDTH / 2, VIEW_HEIGHT / 2, '#facc15', 38));
+    }
+
+    let lastTime = performance.now();
+
+    function drawHealthCatchNav(ctx) {
+      // Find active health orbs in battlefield
+      for (const p of powerups) {
+        if (p.type === 'heal' && !p.beingCaught) {
+          const hx = Hero.x + Hero.width / 2;
+          const hy = Hero.y + Hero.height / 2;
+          const dist = Math.hypot(p.x - hx, p.y - hy);
+
+          // Draw guide beacon indicator when more than 160px away
+          if (dist > 160) {
+            const angle = Math.atan2(p.y - hy, p.x - hx);
+            const markerDist = 70;
+            const mx = hx + Math.cos(angle) * markerDist;
+            const my = hy + Math.sin(angle) * markerDist;
+
+            ctx.save();
+            ctx.translate(mx, my);
+            ctx.rotate(angle);
+
+            // Small glowing emerald arrow pointing toward health
+            ctx.fillStyle = '#4ade80';
+            ctx.shadowColor = '#4ade80';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.moveTo(12, 0);
+            ctx.lineTo(-6, -7);
+            ctx.lineTo(-3, 0);
+            ctx.lineTo(-6, 7);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+          }
+        }
+      }
+    }
+
+    function gameLoop(timestamp) {
+      requestAnimationFrame(gameLoop);
+
+      // Clear Canvas
+      ctx.clearRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+      // Render Parallax Background
+      drawParallaxBackground(ctx, currentLevelIndex);
+
+      if (currentState === GAME_STATE.PLAYING) {
+        // Combo Timer decay
+        if (comboTimer > 0) {
+          comboTimer--;
+          if (comboTimer <= 0) comboMultiplier = 1;
+        }
+
+        // Handle Spawns & Encounters
+        handleSpawns();
+
+        // Update Hero
+        Hero.update();
+
+        // Update Boss if active
+        if (currentBoss) {
+          currentBoss.update();
+        }
+
+        // Update Enemies
+        for (let i = enemies.length - 1; i >= 0; i--) {
+          enemies[i].update();
+          if (enemies[i].x < -60) {
+            enemies.splice(i, 1);
+          }
+        }
+
+        // Update Powerups
+        for (let i = powerups.length - 1; i >= 0; i--) {
+          powerups[i].update();
+          if (powerups[i].x < -40 || powerups[i].y > VIEW_HEIGHT + 40) {
+            powerups.splice(i, 1);
+          }
+        }
+
+        // Update Projectiles
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+          projectiles[i].update();
+        }
+
+        // Collisions
+        checkCollisions();
+
+        // Update HUD elements
+        updateHUD();
+      }
+
+      // Draw PowerUps (Health drops, Crates, Energy)
+      for (const p of powerups) {
+        p.draw(ctx);
+      }
+
+      // Draw Health Catch Guidance Arrows
+      if (currentState === GAME_STATE.PLAYING) {
+        drawHealthCatchNav(ctx);
+      }
+
+      // Draw Enemies
+      for (const e of enemies) {
+        e.draw(ctx);
+      }
+
+      // Draw Boss
+      if (currentBoss) {
+        currentBoss.draw(ctx);
+      }
+
+      // Draw Hero
+      Hero.draw(ctx);
+
+      // Draw Projectiles
+      for (const proj of projectiles) {
+        proj.draw(ctx);
+      }
+
+      /* */
+      // Update & Draw Particles (clean up expired particles before drawing)
+      for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        if (particles[i].life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        particles[i].draw(ctx);
+      }
+
+      // Update & Draw Floating Comic Texts
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        floatingTexts[i].update();
+        if (floatingTexts[i].life <= 0) {
+          floatingTexts.splice(i, 1);
+          continue;
+        }
+        floatingTexts[i].draw(ctx);
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (keys.hasOwnProperty(e.key)) {
+        keys[e.key] = true;
+      }
+      if (e.key === 'p' || e.key === 'P') {
+        togglePause();
+      }
+      if (e.key === 'm' || e.key === 'M') {
+        const on = SoundFx.toggleSound();
+        updateSoundButton(on);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (keys.hasOwnProperty(e.key)) {
+        keys[e.key] = false;
+      }
+    });
+
+    // Mobile Virtual Joystick Touch Handlers
+    const joystickZone = document.getElementById('touch-joystick-zone');
+    const joystickKnob = document.getElementById('touch-joystick-knob');
+    const btnFire = document.getElementById('btn-touch-fire');
+    const btnSuper = document.getElementById('btn-touch-super');
+
+    function handleJoyStart(e) {
+      e.preventDefault();
+      SoundFx.init();
+      const touch = e.touches ? e.touches[0] : e;
+      const rect = joystickZone.getBoundingClientRect();
+      touchJoystick.active = true;
+      touchJoystick.startX = rect.left + rect.width / 2;
+      touchJoystick.startY = rect.top + rect.height / 2;
+      handleJoyMove(e);
+    }
+
+    function handleJoyMove(e) {
+      if (!touchJoystick.active) return;
+      const touch = e.touches ? e.touches[0] : e;
+      const dx = touch.clientX - touchJoystick.startX;
+      const dy = touch.clientY - touchJoystick.startY;
+      const dist = Math.hypot(dx, dy);
+      const maxRadius = 38;
+
+      let clampedX = dx;
+      let clampedY = dy;
+      if (dist > maxRadius) {
+        clampedX = (dx / dist) * maxRadius;
+        clampedY = (dy / dist) * maxRadius;
+      }
+
+      joystickKnob.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
+      touchJoystick.dx = clampedX / maxRadius;
+      touchJoystick.dy = clampedY / maxRadius;
+    }
+
+    function handleJoyEnd(e) {
+      touchJoystick.active = false;
+      touchJoystick.dx = 0;
+      touchJoystick.dy = 0;
+      joystickKnob.style.transform = `translate(0px, 0px)`;
+    }
+
+    joystickZone.addEventListener('touchstart', handleJoyStart, { passive: false });
+    window.addEventListener('touchmove', handleJoyMove, { passive: false });
+    window.addEventListener('touchend', handleJoyEnd);
+
+    // Mobile Action buttons
+    btnFire.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      SoundFx.init();
+      touchShooting = true;
+    });
+    btnFire.addEventListener('touchend', () => { touchShooting = false; });
+    btnFire.addEventListener('mousedown', () => { SoundFx.init(); touchShooting = true; });
+    btnFire.addEventListener('mouseup', () => { touchShooting = false; });
+
+    btnSuper.addEventListener('click', () => {
+      SoundFx.init();
+      if (Hero.energy >= 100 && !Hero.megaActive) {
+        Hero.activateMegaBlast();
+      }
+    });
+
+    // Pause functionality
+    function togglePause() {
+      if (currentState === GAME_STATE.PLAYING) {
+        currentState = GAME_STATE.PAUSED;
+        document.getElementById('screen-pause').classList.remove('hidden');
+      } else if (currentState === GAME_STATE.PAUSED) {
+        currentState = GAME_STATE.PLAYING;
+        document.getElementById('screen-pause').classList.add('hidden');
+      }
+    }
+    document.getElementById('btn-pause-toggle').addEventListener('click', togglePause);
+    document.getElementById('btn-resume-game').addEventListener('click', togglePause);
+    document.getElementById('btn-pause-menu').addEventListener('click', () => {
+      document.getElementById('screen-pause').classList.add('hidden');
+      document.getElementById('screen-start').classList.remove('hidden');
+      currentState = GAME_STATE.MENU;
+    });
+
+    // Sound toggle
+    function updateSoundButton(enabled) {
+      const icon = document.getElementById('sound-icon');
+      if (enabled) {
+        icon.className = "fa-solid fa-volume-high text-sm";
+      } else {
+        icon.className = "fa-solid fa-volume-xmark text-sm text-slate-500";
+      }
+    }
+    document.getElementById('btn-sound-toggle').addEventListener('click', () => {
+      const enabled = SoundFx.toggleSound();
+      updateSoundButton(enabled);
+    });
+
+    // UI Buttons Handlers
+    document.getElementById('btn-start-game').addEventListener('click', () => {
+      SoundFx.init();
+      score = 0;
+      defeatedCount = 0;
+      startLevel(1);
+    });
+
+    document.getElementById('btn-open-levels').addEventListener('click', () => {
+      document.getElementById('screen-levels').classList.remove('hidden');
+    });
+
+    document.getElementById('btn-back-from-levels').addEventListener('click', () => {
+      document.getElementById('screen-levels').classList.add('hidden');
+    });
+
+    document.querySelectorAll('.btn-select-level').forEach(btn => {
+      btn.addEventListener('click', () => {
+        SoundFx.init();
+        score = 0;
+        defeatedCount = 0;
+        const lvl = parseInt(btn.getAttribute('data-level'), 10);
+        startLevel(lvl);
+      });
+    });
+
+    document.getElementById('btn-restart-game').addEventListener('click', () => {
+      startLevel(currentLevelIndex);
+    });
+
+    document.getElementById('btn-next-level').addEventListener('click', () => {
+      startLevel(currentLevelIndex + 1);
+    });
+
+    document.getElementById('btn-gameover-menu').addEventListener('click', () => {
+      document.getElementById('screen-gameover').classList.add('hidden');
+      document.getElementById('screen-start').classList.remove('hidden');
+      currentState = GAME_STATE.MENU;
+    });
+
+    window.onload = function () {
+      resizeCanvas();
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+</body>
+</html>
